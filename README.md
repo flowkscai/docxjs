@@ -2,7 +2,9 @@
 [![Support Ukraine](https://img.shields.io/badge/Support-Ukraine-blue?style=flat&logo=adguard)](https://war.ukraine.ua/)
 
 # docxjs
-Docx rendering library
+Docx rendering library  
+
+Originally created by [Volodymyr Baydalka](https://github.com/VolodymyrBaydalka/docxjs) Forked and modified by [Kesi Cai](https://github.com/flowkscai/docxjs) to fix highlighting and numbering issues.
 
 Demo - https://volodymyrbaydalka.github.io/docxjs/
 

@@ -72,6 +72,7 @@ export class HtmlRenderer {
 
 	tasks: Promise<any>[] = [];
 	postRenderTasks: any[] = [];
+	renderedNumberings: Record<string, boolean> = {};
 
 	constructor(public htmlDocument: Document) {
 	}
@@ -83,6 +84,7 @@ export class HtmlRenderer {
 		this.rootSelector = options.inWrapper ? `.${this.className}-wrapper` : ':root';
 		this.styleMap = null;
 		this.tasks = [];
+		this.renderedNumberings = {};
 
 		if (this.options.renderComments && globalThis.Highlight) {
 			this.commentHighlight = new Highlight();
@@ -903,7 +905,7 @@ section.${c}>footer { z-index: 1; }
 	}
 
 	renderParagraph(elem: WmlParagraph) {
-		var result = this.renderContainer(elem, "p");
+		var result: HTMLParagraphElement | HTMLParagraphElement[] = this.renderContainer(elem, "p");
 
 		const style = this.findStyle(elem.styleName);
 		elem.tabs ??= style?.paragraphProps?.tabs;  //TODO
@@ -915,7 +917,22 @@ section.${c}>footer { z-index: 1; }
 		const numbering = elem.numbering ?? style?.paragraphProps?.numbering;
 
 		if (numbering) {
-			result.classList.add(this.numberingClass(numbering.id, numbering.level));
+			const className = this.numberingClass(numbering.id, numbering.level);
+			result.classList.add(className);
+
+			this.renderedNumberings[className] = true;
+
+			if (numbering.level > 0) {
+				const prevLevelClass = this.numberingClass(numbering.id, numbering.level - 1);
+				if (!this.renderedNumberings[prevLevelClass]) {
+					const prevLevelNode = this.createElement("p", {
+						className: prevLevelClass,
+						style: 'min-height: 0; max-height: 0; overflow: hidden;'
+					})
+					result = [prevLevelNode, result]
+					this.renderedNumberings[prevLevelClass] = true;
+				}
+			}
 		}
 
 		return result;

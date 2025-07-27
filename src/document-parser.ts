@@ -1197,6 +1197,8 @@ export class DocumentParser {
 	parseDefaultProperties(elem: Element, style: Record<string, string> = null, childStyle: Record<string, string> = null, handler: (prop: Element) => boolean = null): Record<string, string> {
 		style = style || {};
 
+		let hasHighlight = false;
+
 		xmlUtil.foreach(elem, c => {
 			if (handler?.(c))
 				return;
@@ -1219,11 +1221,16 @@ export class DocumentParser {
 					break;
 
 				case "shd":
-					style["background-color"] = xmlUtil.colorAttr(c, "fill", null, autos.shd);
+					if (!hasHighlight) {
+						// The priority of shading is lower than that of highlighting. So, only set background-color if highlight is not set.
+						// See https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.highlight?view=openxml-3.0.1
+						style["background-color"] = xmlUtil.colorAttr(c, "fill", null, autos.shd);
+					}
 					break;
 
 				case "highlight":
 					style["background-color"] = xmlUtil.colorAttr(c, "val", null, autos.highlight);
+					hasHighlight = true;
 					break;
 
 				case "vertAlign":

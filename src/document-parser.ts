@@ -385,7 +385,9 @@ export class DocumentParser {
 				case "num":
 					var numId = xml.attr(n, "numId");
 					var abstractNumId = xml.elementAttr(n, "abstractNumId", "val");
-					mapping[abstractNumId] = numId;
+					if (!mapping[abstractNumId] || xml.elements(n, 'lvlOverride').length === 0) {
+						mapping[abstractNumId] = numId;
+					}
 					break;
 			}
 		});

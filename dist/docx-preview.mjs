@@ -1665,7 +1665,9 @@ class DocumentParser {
                 case "num":
                     var numId = globalXmlParser.attr(n, "numId");
                     var abstractNumId = globalXmlParser.elementAttr(n, "abstractNumId", "val");
-                    mapping[abstractNumId] = numId;
+                    if (!mapping[abstractNumId] || globalXmlParser.elements(n, 'lvlOverride').length === 0) {
+                        mapping[abstractNumId] = numId;
+                    }
                     break;
             }
         });

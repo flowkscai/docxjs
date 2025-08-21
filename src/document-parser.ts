@@ -960,9 +960,13 @@ export class DocumentParser {
 
 		result.cssStyle["position"] = "relative";
 
+		var cx: number, cy: number;
+
 		for (var n of xml.elements(xfrm)) {
 			switch (n.localName) {
 				case "ext":
+					cx = xml.intAttr(n, "cx");
+					cy = xml.intAttr(n, "cy");
 					result.cssStyle["width"] = xml.lengthAttr(n, "cx", LengthUsage.Emu);
 					result.cssStyle["height"] = xml.lengthAttr(n, "cy", LengthUsage.Emu);
 					break;
@@ -971,6 +975,45 @@ export class DocumentParser {
 					result.cssStyle["left"] = xml.lengthAttr(n, "x", LengthUsage.Emu);
 					result.cssStyle["top"] = xml.lengthAttr(n, "y", LengthUsage.Emu);
 					break;
+			}
+		}
+
+		var srcRect = xml.element(blipFill, "srcRect");
+		if (srcRect && xml.attrs(srcRect).length > 0) {
+			var t = xml.percentageAttr(srcRect, "t", 0);
+			var r = xml.percentageAttr(srcRect, "r", 0);
+			var b = xml.percentageAttr(srcRect, "b", 0);
+			var l = xml.percentageAttr(srcRect, "l", 0);
+			
+			var clipPath = `inset(${t}% ${r}% ${b}% ${l}%)`;
+			result.cssStyle["clip-path"] = result.cssStyle["-webkit-clip-path"] = clipPath;
+
+			if (l || r) {
+				var ratio = (100 - l - r) / 100;
+				var renderWidth = cx / ratio;
+				result.cssStyle["width"] = convertLength((renderWidth).toString(), LengthUsage.Emu);
+
+				if (l) {
+					result.cssStyle["margin-left"] = convertLength((renderWidth * l / -100).toString(), LengthUsage.Emu);
+				}
+
+				if (r) {
+					result.cssStyle["margin-right"] = convertLength((renderWidth * r / -100).toString(), LengthUsage.Emu);
+				}
+			}
+
+			if (t || b) {
+				var ratio = (100 - t - b) / 100;
+				var renderHeight = cy / ratio;
+				result.cssStyle["height"] = convertLength((renderHeight).toString(), LengthUsage.Emu);
+
+				if (t) {
+					result.cssStyle["margin-top"] = convertLength((renderHeight * t / -100).toString(), LengthUsage.Emu);
+				}
+
+				if (b) {
+					result.cssStyle["margin-bottom"] = convertLength((renderHeight * b / -100).toString(), LengthUsage.Emu);
+				}
 			}
 		}
 

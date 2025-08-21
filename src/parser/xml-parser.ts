@@ -94,6 +94,11 @@ export class XmlParser {
     lengthAttr(node: Element, attrName: string, usage: LengthUsageType = LengthUsage.Dxa): Length {
         return convertLength(this.attr(node, attrName), usage);
     }
+
+	percentageAttr(node: Element, attrName: string, defaultValue: number = null): number {
+        var val = this.intAttr(node, attrName);
+        return val ? val / 1000 : defaultValue;
+    }
 }
 
 const globalXmlParser = new XmlParser();

@@ -217,6 +217,10 @@
         lengthAttr(node, attrName, usage = LengthUsage.Dxa) {
             return convertLength(this.attr(node, attrName), usage);
         }
+        percentageAttr(node, attrName, defaultValue = null) {
+            var val = this.intAttr(node, attrName);
+            return val ? val / 1000 : defaultValue;
+        }
     }
     const globalXmlParser = new XmlParser();
 
@@ -2133,9 +2137,12 @@
             var spPr = globalXmlParser.element(elem, "spPr");
             var xfrm = globalXmlParser.element(spPr, "xfrm");
             result.cssStyle["position"] = "relative";
+            var cx, cy;
             for (var n of globalXmlParser.elements(xfrm)) {
                 switch (n.localName) {
                     case "ext":
+                        cx = globalXmlParser.intAttr(n, "cx");
+                        cy = globalXmlParser.intAttr(n, "cy");
                         result.cssStyle["width"] = globalXmlParser.lengthAttr(n, "cx", LengthUsage.Emu);
                         result.cssStyle["height"] = globalXmlParser.lengthAttr(n, "cy", LengthUsage.Emu);
                         break;
@@ -2143,6 +2150,37 @@
                         result.cssStyle["left"] = globalXmlParser.lengthAttr(n, "x", LengthUsage.Emu);
                         result.cssStyle["top"] = globalXmlParser.lengthAttr(n, "y", LengthUsage.Emu);
                         break;
+                }
+            }
+            var srcRect = globalXmlParser.element(blipFill, "srcRect");
+            if (srcRect && globalXmlParser.attrs(srcRect).length > 0) {
+                var t = globalXmlParser.percentageAttr(srcRect, "t", 0);
+                var r = globalXmlParser.percentageAttr(srcRect, "r", 0);
+                var b = globalXmlParser.percentageAttr(srcRect, "b", 0);
+                var l = globalXmlParser.percentageAttr(srcRect, "l", 0);
+                var clipPath = `inset(${t}% ${r}% ${b}% ${l}%)`;
+                result.cssStyle["clip-path"] = result.cssStyle["-webkit-clip-path"] = clipPath;
+                if (l || r) {
+                    var ratio = (100 - l - r) / 100;
+                    var renderWidth = cx / ratio;
+                    result.cssStyle["width"] = convertLength((renderWidth).toString(), LengthUsage.Emu);
+                    if (l) {
+                        result.cssStyle["margin-left"] = convertLength((renderWidth * l / -100).toString(), LengthUsage.Emu);
+                    }
+                    if (r) {
+                        result.cssStyle["margin-right"] = convertLength((renderWidth * r / -100).toString(), LengthUsage.Emu);
+                    }
+                }
+                if (t || b) {
+                    var ratio = (100 - t - b) / 100;
+                    var renderHeight = cy / ratio;
+                    result.cssStyle["height"] = convertLength((renderHeight).toString(), LengthUsage.Emu);
+                    if (t) {
+                        result.cssStyle["margin-top"] = convertLength((renderHeight * t / -100).toString(), LengthUsage.Emu);
+                    }
+                    if (b) {
+                        result.cssStyle["margin-bottom"] = convertLength((renderHeight * b / -100).toString(), LengthUsage.Emu);
+                    }
                 }
             }
             return result;

@@ -6,6 +6,9 @@ Docx rendering library
 
 Originally created by [Volodymyr Baydalka](https://github.com/VolodymyrBaydalka/docxjs) Forked and modified by [Kesi Cai](https://github.com/flowkscai/docxjs) to fix highlighting and numbering issues.
 
+**Additional features:**
+- Image cropping support
+
 Demo - https://volodymyrbaydalka.github.io/docxjs/
 
 Goal
